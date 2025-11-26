@@ -1,5 +1,5 @@
 import z from "zod";
-import { Category } from "../categories";
+import { Category } from "../data";
 
 export function getDynamicSchema(category?: Category) {
   const shape: Record<string, any> = {
