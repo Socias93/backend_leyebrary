@@ -1,6 +1,16 @@
 import express from "express";
+import { validate } from "./schemas/Categories";
 
 const router = express.Router();
+
+const CATEGORY_API = "/";
+const CATEGORY_API_ID = "/:id";
+const CATEGORY_NOT_FOUND = "Category ID not found";
+const CATEGORY_EXIST = "Category already exists";
+
+export function getCategories(): Category[] {
+  return categories;
+}
 
 export const categories: Category[] = [
   {
@@ -40,16 +50,37 @@ export interface Category {
   fields?: ("author" | "nbrPages" | "runTimeMinutes")[];
 }
 
-router.get("/", (req, res) => {
+router.get(CATEGORY_API, (req, res) => {
   return res.send(categories);
 });
 
-router.get("/:id", (req, res) => {
+router.get(CATEGORY_API_ID, (req, res) => {
   const category = categories.find((c) => c.id === req.params.id);
 
-  if (!category) return res.status(404).send("Could not find category");
+  if (!category) return res.status(404).send(CATEGORY_NOT_FOUND);
 
   return res.send(category);
+});
+
+router.post(CATEGORY_API, (req, res) => {
+  const validation = validate(req.body);
+  if (!validation.success)
+    return res.status(404).send(validation.error.issues[0].message);
+
+  const exists = getCategories().some(
+    (c) => c.name.toLowerCase() === req.body.name.toLowerCase()
+  );
+  if (exists) return res.status(400).send(CATEGORY_EXIST);
+
+  const newCategory: Category = {
+    id: Date.now().toString(),
+    name: req.body.name,
+    fields: req.body.fields,
+  };
+
+  categories.push(newCategory);
+
+  return res.status(201).send(newCategory);
 });
 
 export default router;

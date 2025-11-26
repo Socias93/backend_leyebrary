@@ -1,6 +1,6 @@
 import express from "express";
-import { categories, Category } from "./categories";
-import { validate } from "./schemas/itemsSchema";
+import { categories, Category, getCategories } from "./categories";
+import { validate } from "./schemas/Items";
 
 const router = express.Router();
 
@@ -11,10 +11,6 @@ const ITEM_API_ID = "/:id";
 const ITEM_NOT_FOUND = "Item not found";
 
 const CATEGORY_NOT_FOUND = "Category ID not found";
-
-export function getCategories(): Category[] {
-  return categories;
-}
 
 export interface BaseItem {
   id: string;
