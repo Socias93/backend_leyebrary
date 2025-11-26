@@ -12,9 +12,9 @@ export interface BaseItem {
   title: string;
   isBorrowable?: boolean;
   category: Category;
-  // if checked out:
+
   borrower?: string;
-  borrowDate?: string; // ISO string
+  borrowDate?: string;
 }
 
 export interface Book extends BaseItem {
@@ -97,7 +97,6 @@ const items: LibraryItem[] = [
     category: { id: "c1b3f9a0-1a2b-4c3d-8e9f-000000000001", name: "Book" },
   } as Book,
 
-  // Två extra DVD
   {
     id: "lib-0007",
     title: "Action Movie II",
@@ -114,7 +113,6 @@ const items: LibraryItem[] = [
     category: { id: "c1b3f9a0-1a2b-4c3d-8e9f-000000000002", name: "DVD" },
   } as DVD,
 
-  // Två extra ljudböcker
   {
     id: "lib-0009",
     title: "Storytelling - Vol. 2",
@@ -136,7 +134,6 @@ const items: LibraryItem[] = [
     },
   } as Audiobook,
 
-  // Två extra uppslagsböcker
   {
     id: "lib-0011",
     title: "Nationalencyklopedin Volym 2",
@@ -161,6 +158,11 @@ const items: LibraryItem[] = [
 
 router.get("/", (req, res) => {
   return res.send(items);
+});
+
+router.get("/:id", (req, res) => {
+  const item = items.find((i) => i.id === req.params.id);
+  return res.send(item);
 });
 
 export default router;
