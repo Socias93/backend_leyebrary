@@ -44,4 +44,9 @@ router.get("/", (req, res) => {
   return res.send(categories);
 });
 
+router.get("/:id", (req, res) => {
+  const category = categories.find((c) => c.id === req.params.id);
+  return res.send(category);
+});
+
 export default router;
