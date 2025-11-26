@@ -46,6 +46,9 @@ router.get("/", (req, res) => {
 
 router.get("/:id", (req, res) => {
   const category = categories.find((c) => c.id === req.params.id);
+
+  if (!category) return res.status(404).send("Could not find category");
+
   return res.send(category);
 });
 

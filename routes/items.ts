@@ -1,7 +1,16 @@
 import express from "express";
 import { categories, Category } from "./categories";
+import { validate } from "./schemas/itemsSchema";
 
 const router = express.Router();
+
+const ITEM_API = "/";
+
+const ITEM_API_ID = "/:id";
+
+const ITEM_NOT_FOUND = "Item not found";
+
+const CATEGORY_NOT_FOUND = "Category ID not found";
 
 export function getCategories(): Category[] {
   return categories;
@@ -18,21 +27,21 @@ export interface BaseItem {
 }
 
 export interface Book extends BaseItem {
-  author: string;
-  nbrPages: number;
+  author?: string;
+  nbrPages?: number;
 }
 
 export interface DVD extends BaseItem {
-  runTimeMinutes: number;
+  runTimeMinutes?: number;
 }
 
 export interface Audiobook extends BaseItem {
-  runTimeMinutes: number;
+  runTimeMinutes?: number;
 }
 
 export interface ReferenceBook extends BaseItem {
-  author: string;
-  nbrPages: number;
+  author?: string;
+  nbrPages?: number;
 }
 
 export type LibraryItem = Book | DVD | Audiobook | ReferenceBook;
@@ -156,13 +165,39 @@ const items: LibraryItem[] = [
   } as ReferenceBook,
 ];
 
-router.get("/", (req, res) => {
+router.get(ITEM_API, (req, res) => {
   return res.send(items);
 });
 
-router.get("/:id", (req, res) => {
+router.get(ITEM_API_ID, (req, res) => {
   const item = items.find((i) => i.id === req.params.id);
+
+  if (!item) return res.status(404).send(ITEM_NOT_FOUND);
+
   return res.send(item);
+});
+
+router.post(ITEM_API, (req, res) => {
+  const validation = validate(req.body);
+  if (!validation.success)
+    return res.status(400).send(validation.error.issues[0].message);
+
+  const category = getCategories().find((c) => c.id === req.body.categoryId);
+  if (!category) return res.status(404).send(CATEGORY_NOT_FOUND);
+
+  const newItem: LibraryItem = {
+    id: Date.now().toString(),
+    title: req.body.title,
+    category,
+    ...(req.body.author ? { author: req.body.author } : {}),
+    ...(req.body.nbrPages ? { nbrPages: req.body.nbrPages } : {}),
+    ...(req.body.runTimeMinutes
+      ? { runTimeMinutes: req.body.runTimeMinutes }
+      : {}),
+  };
+
+  items.push(newItem);
+  return res.status(201).send(newItem);
 });
 
 export default router;
