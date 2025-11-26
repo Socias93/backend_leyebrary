@@ -2,7 +2,7 @@ import express from "express";
 
 const router = express.Router();
 
-const categories: Category[] = [
+export const categories: Category[] = [
   {
     id: "c1b3f9a0-1a2b-4c3d-8e9f-000000000001",
     name: "Book",
@@ -33,7 +33,7 @@ const categories: Category[] = [
   },
 ];
 
-interface Category {
+export interface Category {
   id: string;
   name: string;
   imageUrl?: string;
