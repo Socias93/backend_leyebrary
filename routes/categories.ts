@@ -58,6 +58,8 @@ router.delete(CATEGORY_API_ID, async (req, res) => {
   });
   if (used) return res.status(404).send(ITEM_IN_CATEGORY);
 
+  await prisma.category.delete({ where: { id: req.params.id } });
+
   return res.status(200).send(category);
 });
 
