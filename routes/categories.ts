@@ -46,16 +46,17 @@ router.post(CATEGORY_API, async (req, res) => {
   return res.status(201).send(newCategory);
 });
 
-router.delete(CATEGORY_API_ID, (req, res) => {
-  const category = categories.find((c) => c.id === req.params.id);
+router.delete(CATEGORY_API_ID, async (req, res) => {
+  const category = await prisma.category.findFirst({
+    where: { id: req.params.id },
+  });
 
   if (!category) return res.status(404).send(CATEGORY_NOT_FOUND);
 
-  const used = items.some((item) => item.category?.id === req.params.id);
+  const used = await prisma.item.findFirst({
+    where: { categoryId: category.id },
+  });
   if (used) return res.status(404).send(ITEM_IN_CATEGORY);
-
-  const index = categories.indexOf(category);
-  categories.splice(index, 1);
 
   return res.status(200).send(category);
 });
