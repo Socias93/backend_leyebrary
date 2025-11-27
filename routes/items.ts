@@ -16,8 +16,8 @@ router.get(ITEM_API, async (req, res) => {
   return res.send(items);
 });
 
-router.get(ITEM_API_ID, (req, res) => {
-  const item = items.find((i) => i.id === req.params.id);
+router.get(ITEM_API_ID, async (req, res) => {
+  const item = await prisma.item.findFirst({ where: { id: req.params.id } });
 
   if (!item) return res.status(404).send(ITEM_NOT_FOUND);
 
