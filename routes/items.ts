@@ -1,7 +1,9 @@
 import express from "express";
 import { validate } from "./schemas/Items";
 import { getCategories, items, LibraryItem } from "./data";
+import { PrismaClient } from "@prisma/client";
 
+const prisma = new PrismaClient();
 const router = express.Router();
 
 const ITEM_API = "/";
@@ -9,7 +11,8 @@ const ITEM_API_ID = "/:id";
 const ITEM_NOT_FOUND = "Item not found";
 const CATEGORY_NOT_FOUND = "Category ID not found";
 
-router.get(ITEM_API, (req, res) => {
+router.get(ITEM_API, async (req, res) => {
+  const items = await prisma.item.findMany();
   return res.send(items);
 });
 
