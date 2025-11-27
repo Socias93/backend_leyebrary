@@ -27,23 +27,21 @@ router.get(CATEGORY_API_ID, async (req, res) => {
   return res.send(category);
 });
 
-router.post(CATEGORY_API, (req, res) => {
+router.post(CATEGORY_API, async (req, res) => {
   const validation = validate(req.body);
   if (!validation.success)
     return res.status(404).send(validation.error.issues[0].message);
 
-  const exists = getCategories().some(
-    (c) => c.name.toLowerCase() === req.body.name.toLowerCase()
-  );
+  const nameLower = req.body.name.toLowerCase();
+
+  const exists = await prisma.category.findFirst({
+    where: { name: nameLower },
+  });
   if (exists) return res.status(400).send(CATEGORY_EXIST);
 
-  const newCategory: Category = {
-    id: Date.now().toString(),
-    name: req.body.name,
-    fields: req.body.fields,
-  };
-
-  categories.push(newCategory);
+  const newCategory = await prisma.category.create({
+    data: { name: nameLower, fields: req.body.fields },
+  });
 
   return res.status(201).send(newCategory);
 });

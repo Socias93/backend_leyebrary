@@ -24,26 +24,24 @@ router.get(ITEM_API_ID, async (req, res) => {
   return res.send(item);
 });
 
-router.post(ITEM_API, (req, res) => {
+router.post(ITEM_API, async (req, res) => {
   const validation = validate(req.body);
   if (!validation.success)
     return res.status(400).send(validation.error.issues[0].message);
 
-  const category = getCategories().find((c) => c.id === req.body.categoryId);
+  const category = await prisma.category.findFirst({
+    where: { id: req.body.categoryId },
+  });
   if (!category) return res.status(404).send(CATEGORY_NOT_FOUND);
 
-  const newItem: LibraryItem = {
-    id: Date.now().toString(),
-    title: req.body.title,
-    category,
-    ...(req.body.author ? { author: req.body.author } : {}),
-    ...(req.body.nbrPages ? { nbrPages: req.body.nbrPages } : {}),
-    ...(req.body.runTimeMinutes
-      ? { runTimeMinutes: req.body.runTimeMinutes }
-      : {}),
-  };
+  const newItem = await prisma.item.create({
+    data: {
+      title: req.body.title,
+      attributes: req.body.attributes,
+      categoryId: req.body.categoryId,
+    },
+  });
 
-  items.push(newItem);
   return res.status(201).send(newItem);
 });
 
