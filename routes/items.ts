@@ -1,7 +1,6 @@
 import express from "express";
-import { validate } from "./schemas/Items";
-import { getCategories, items, LibraryItem } from "./data";
 import { PrismaClient } from "@prisma/client";
+import { validateItem } from "./schemas/Items";
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -12,12 +11,17 @@ const ITEM_NOT_FOUND = "Item not found";
 const CATEGORY_NOT_FOUND = "Category ID not found";
 
 router.get(ITEM_API, async (req, res) => {
-  const items = await prisma.item.findMany();
+  const items = await prisma.item.findMany({
+    include: { category: true },
+  });
   return res.send(items);
 });
 
 router.get(ITEM_API_ID, async (req, res) => {
-  const item = await prisma.item.findFirst({ where: { id: req.params.id } });
+  const item = await prisma.item.findFirst({
+    where: { id: req.params.id },
+    include: { category: true },
+  });
 
   if (!item) return res.status(404).send(ITEM_NOT_FOUND);
 
@@ -25,7 +29,7 @@ router.get(ITEM_API_ID, async (req, res) => {
 });
 
 router.post(ITEM_API, async (req, res) => {
-  const validation = validate(req.body);
+  const validation = validateItem(req.body);
   if (!validation.success)
     return res.status(400).send(validation.error.issues[0].message);
 
@@ -49,7 +53,7 @@ router.put(ITEM_API_ID, async (req, res) => {
   const item = await prisma.item.findFirst({ where: { id: req.params.id } });
   if (!item) return res.status(404).send(ITEM_NOT_FOUND);
 
-  const validation = validate(req.body);
+  const validation = validateItem(req.body);
   if (!validation.success)
     return res.status(400).send(validation.error.issues[0].message);
 
@@ -76,6 +80,41 @@ router.delete(ITEM_API_ID, async (req, res) => {
 
   await prisma.item.delete({ where: { id: req.params.id } });
   return res.status(200).send(item);
+});
+
+router.post("/:id/checkout", async (req, res) => {
+  const { borrower } = req.body;
+
+  const item = await prisma.item.findFirst({ where: { id: req.params.id } });
+  if (!item) return res.status(404).send("Item not found");
+
+  if (item.categoryId === "Referencebook" || !item.isBorrowable)
+    return res.status(400).send("Item cannot be borrowed");
+
+  const updated = await prisma.item.update({
+    where: { id: req.params.id },
+    data: {
+      borrower,
+      borrowDate: new Date().toISOString(),
+      isBorrowable: false,
+    },
+  });
+
+  return res.status(200).send(updated);
+});
+
+router.post("/:id/return", async (req, res) => {
+  const item = await prisma.item.findFirst({ where: { id: req.params.id } });
+  if (!item) return res.status(404).send("Item not found");
+
+  if (!item.borrower) return res.status(400).send("Item is not borrowed");
+
+  const updated = await prisma.item.update({
+    where: { id: req.params.id },
+    data: { borrower: null, borrowDate: null, isBorrowable: true },
+  });
+
+  return res.status(200).send(updated);
 });
 
 export default router;

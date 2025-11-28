@@ -16,10 +16,13 @@ model Category {
 }
 
 model Item {
-  id         String   @id @default(cuid())
-  title      String
-  categoryId String
-  attributes Json?
-  createdAt  DateTime @default(now())
-  category   Category @relation(fields: [categoryId], references: [id])
+  id           String    @id @default(cuid())
+  title        String
+  categoryId   String
+  attributes   Json?
+  createdAt    DateTime  @default(now())
+  isBorrowable Boolean   @default(true)
+  borrower     String?
+  borrowDate   DateTime?
+  category     Category  @relation(fields: [categoryId], references: [id])
 }

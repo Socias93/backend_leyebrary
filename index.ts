@@ -1,12 +1,15 @@
 import express from "express";
 import categories from "./routes/categories";
 import items from "./routes/items";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import cors from "cors";
 
 const app = express();
 app.use(express.json());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+  })
+);
 
 const PORT = 5313;
 

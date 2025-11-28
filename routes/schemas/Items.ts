@@ -1,35 +1,22 @@
-import z from "zod";
-import { Category } from "../data";
+// backend/schemas/itemSchema.ts
+import { z } from "zod";
 
-export function getDynamicSchema(category?: Category) {
-  const shape: Record<string, any> = {
-    id: z.string().optional(),
-    title: z.string().min(1, { message: "Title is mandatory" }),
-    categoryId: z.string().min(1, { message: "Category is required" }),
-  };
+// Detta är samma schema som frontend använder
+export const itemSchema = z.object({
+  id: z.string().optional(),
+  title: z.string().min(1, { message: "Title is required" }),
+  categoryId: z.string({ error: "Category is required" }),
+  attributes: z.object({
+    author: z.string().optional(),
+    nbrPages: z.number().optional(),
+    runTimeMinutes: z.number().optional(),
+  }),
+});
 
-  category?.fields?.forEach((field) => {
-    switch (field) {
-      case "author":
-        shape.author = z.string().min(1, { message: "Author is required" });
-        break;
-      case "nbrPages":
-        shape.nbrPages = z
-          .number({ error: "Must be a number" })
-          .min(1, { message: "Pages must be at least 1" });
-        break;
-      case "runTimeMinutes":
-        shape.runTimeMinutes = z
-          .number({ error: "Must be a number" })
-          .min(1, { message: "Time must be at least 1" });
-        break;
-    }
-  });
+// Typen kan användas i backend eller frontend
+export type ItemForm = z.infer<typeof itemSchema>;
 
-  return z.object(shape);
-}
-
-export function validate(body: any, category?: Category) {
-  const schema = getDynamicSchema(category);
-  return schema.safeParse(body);
+// Funktion för att validera data mot schemat
+export function validateItem(body: any) {
+  return itemSchema.safeParse(body);
 }
