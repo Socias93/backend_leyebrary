@@ -4,13 +4,11 @@ import items from "./routes/items";
 import cors from "cors";
 
 const app = express();
-app.use(express.json());
 app.use(
   cors({
-    origin: "*",
+    origin: ["http://localhost:5173", "https://leyebrary.onrender.com"],
   })
 );
-
 const PORT = 5313;
 
 app.use("/api/categories", categories);
