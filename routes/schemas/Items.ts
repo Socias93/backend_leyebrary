@@ -1,7 +1,5 @@
-// backend/schemas/itemSchema.ts
 import { z } from "zod";
 
-// Detta är samma schema som frontend använder
 export const itemSchema = z.object({
   id: z.string().optional(),
   title: z.string().min(1, { message: "Title is required" }),
@@ -13,10 +11,8 @@ export const itemSchema = z.object({
   }),
 });
 
-// Typen kan användas i backend eller frontend
 export type ItemForm = z.infer<typeof itemSchema>;
 
-// Funktion för att validera data mot schemat
 export function validateItem(body: any) {
   return itemSchema.safeParse(body);
 }

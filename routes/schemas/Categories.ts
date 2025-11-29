@@ -5,6 +5,7 @@ export const categorySchema = z.object({
   fields: z
     .array(z.enum(["author", "nbrPages", "runTimeMinutes"]))
     .min(1, { message: "You must choose at least 1 field" }),
+  imageUrl: z.string().min(1, { message: "Image is required" }),
 });
 
 export type CategoryFormData = z.infer<typeof categorySchema>;

@@ -28,21 +28,19 @@ router.get(CATEGORY_API_ID, async (req, res) => {
   return res.send(category);
 });
 
-router.put(CATEGORY_API, async (req, res) => {
+router.post(CATEGORY_API, async (req, res) => {
   const validation = validate(req.body);
-  if (!validation.success)
-    return res.status(404).send(validation.error.issues[0].message);
+  if (!validation.success) {
+    return res.status(400).send(validation.error.issues[0].message);
+  }
 
-  const findName = req.body.name;
-  const findFields = req.body.fields;
+  const { name, fields, imageUrl } = req.body;
 
-  const exists = await prisma.category.findFirst({
-    where: { name: findName },
-  });
+  const exists = await prisma.category.findFirst({ where: { name } });
   if (exists) return res.status(400).send(CATEGORY_EXIST);
 
   const newCategory = await prisma.category.create({
-    data: { name: findName, fields: findFields },
+    data: { name, fields, imageUrl },
   });
 
   return res.status(201).send(newCategory);

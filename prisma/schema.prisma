@@ -9,10 +9,11 @@ datasource db {
 }
 
 model Category {
-  id     String @id @default(cuid())
-  name   String
-  fields Json?
-  items  Item[]
+  id       String @id @default(cuid())
+  name     String
+  imageUrl String
+  fields   Json?
+  items    Item[]
 }
 
 model Item {
