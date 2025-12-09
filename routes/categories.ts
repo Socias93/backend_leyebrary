@@ -12,9 +12,16 @@ const CATEGORY_EXIST = "Category already exists";
 const ITEM_IN_CATEGORY = "Category must be empty before you can delete it";
 
 router.get(CATEGORY_API, async (req, res) => {
-  const categories = await prisma.category.findMany();
-
-  return res.send(categories);
+  try {
+    const categories = await prisma.category.findMany();
+    return res.send(categories);
+  } catch (err) {
+    if (err instanceof Error) {
+      console.error("Error fetching categories:", err.message);
+      console.error(err.stack);
+    }
+    return res.status(500).send("Internal Server Error");
+  }
 });
 
 router.get(CATEGORY_API_ID, async (req, res) => {

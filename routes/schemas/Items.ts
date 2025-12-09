@@ -24,6 +24,18 @@ export function validateItem(body: any) {
   const data = result.data;
 
   if (
+    (data.type === "DVD" || data.type === "AudioBook") &&
+    !data.attributes?.runTimeMinutes
+  ) {
+    return {
+      success: false,
+      error: {
+        issues: [{ message: "DVD/AudioBook requires runTimeMinutes" }],
+      },
+    };
+  }
+
+  if (
     (data.type === "Book" || data.type === "ReferenceBook") &&
     (!data.attributes?.author || !data.attributes?.nbrPages)
   ) {
@@ -33,18 +45,6 @@ export function validateItem(body: any) {
         issues: [
           { message: "Book/ReferenceBook requires author and nbrPages" },
         ],
-      },
-    };
-  }
-
-  if (
-    (data.type === "DVD" || data.type === "AudioBook") &&
-    !data.attributes?.runTimeMinutes
-  ) {
-    return {
-      success: false,
-      error: {
-        issues: [{ message: "DVD/AudioBook requires runTimeMinutes" }],
       },
     };
   }

@@ -38,15 +38,28 @@ router.post(ITEM_API, async (req, res) => {
   });
   if (!category) return res.status(404).send(CATEGORY_NOT_FOUND);
 
+  const { title, categoryId, type, author, nbrPages, runTimeMinutes } =
+    req.body;
+  const attributes: Record<string, any> = {};
+
+  if (type === "Book" || type === "ReferenceBook") {
+    attributes.author = req.body.author;
+    attributes.nbrPages = req.body.nbrPages;
+  }
+
+  if (type === "DVD" || type === "AudioBook") {
+    attributes.runTimeMinutes = req.body.runTimeMinutes;
+  }
+
   const newItem = await prisma.item.create({
     data: {
-      title: req.body.title,
-      attributes: req.body.attributes,
-      categoryId: req.body.categoryId,
-      type: req.body.type,
+      title,
+      categoryId,
+      type,
+      attributes: Object.keys(attributes).length ? attributes : undefined,
+      isBorrowable: type !== "ReferenceBook",
     },
   });
-
   return res.status(201).send(newItem);
 });
 
@@ -63,17 +76,27 @@ router.put(ITEM_API_ID, async (req, res) => {
   });
   if (!category) return res.status(404).send(CATEGORY_NOT_FOUND);
 
-  const newItem = await prisma.item.update({
+  const attributes: Record<string, any> = {};
+  if (req.body.type === "Book" || req.body.type === "ReferenceBook") {
+    attributes.author = req.body.attributes?.author;
+    attributes.nbrPages = req.body.attributes?.nbrPages;
+  }
+  if (req.body.type === "DVD" || req.body.type === "AudioBook") {
+    attributes.runTimeMinutes = req.body.attributes?.runTimeMinutes;
+  }
+
+  const updatedItem = await prisma.item.update({
     where: { id: req.params.id },
     data: {
       title: req.body.title,
       categoryId: req.body.categoryId,
-      attributes: req.body.attributes,
       type: req.body.type,
+      attributes: Object.keys(attributes).length ? attributes : undefined,
+      isBorrowable: req.body.type !== "ReferenceBook",
     },
   });
 
-  return res.status(200).send(newItem);
+  return res.status(200).send(updatedItem);
 });
 
 router.delete(ITEM_API_ID, async (req, res) => {
