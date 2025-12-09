@@ -8,6 +8,13 @@ datasource db {
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
+enum ItemType {
+  Book
+  DVD
+  AudioBook
+  ReferenceBook
+}
+
 model Category {
   id       String @id @default(cuid())
   name     String
@@ -21,6 +28,7 @@ model Item {
   title        String
   categoryId   String
   attributes   Json?
+  type         ItemType?
   createdAt    DateTime  @default(now())
   isBorrowable Boolean   @default(true)
   borrower     String?
