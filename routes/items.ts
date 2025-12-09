@@ -29,38 +29,42 @@ router.get(ITEM_API_ID, async (req, res) => {
 });
 
 router.post(ITEM_API, async (req, res) => {
-  const validation = validateItem(req.body);
-  if (!validation.success)
-    return res.status(400).send(validation.error.issues[0].message);
+  try {
+    const validation = validateItem(req.body);
+    if (!validation.success)
+      return res.status(400).send(validation.error.issues[0].message);
 
-  const category = await prisma.category.findFirst({
-    where: { id: req.body.categoryId },
-  });
-  if (!category) return res.status(404).send(CATEGORY_NOT_FOUND);
+    const category = await prisma.category.findFirst({
+      where: { id: req.body.categoryId },
+    });
+    if (!category) return res.status(404).send(CATEGORY_NOT_FOUND);
 
-  const { title, categoryId, type, author, nbrPages, runTimeMinutes } =
-    req.body;
-  const attributes: Record<string, any> = {};
+    const { title, categoryId, type } = req.body;
+    const attributes: Record<string, any> = {};
 
-  if (type === "Book" || type === "ReferenceBook") {
-    attributes.author = req.body.author;
-    attributes.nbrPages = req.body.nbrPages;
+    if (req.body.type === "Book" || req.body.type === "ReferenceBook") {
+      attributes.author = req.body.attributes.author;
+      attributes.nbrPages = req.body.attributes.nbrPages;
+    }
+
+    if (req.body.type === "DVD" || req.body.type === "AudioBook") {
+      attributes.runTimeMinutes = req.body.attributes.runTimeMinutes;
+    }
+
+    const newItem = await prisma.item.create({
+      data: {
+        title,
+        categoryId,
+        type,
+        attributes: Object.keys(attributes).length ? attributes : undefined,
+        isBorrowable: type !== "ReferenceBook",
+      },
+    });
+    return res.status(201).send(newItem);
+  } catch (err: any) {
+    console.log("Error creating item", err);
+    return res.status(500).send("Internal Server Error");
   }
-
-  if (type === "DVD" || type === "AudioBook") {
-    attributes.runTimeMinutes = req.body.runTimeMinutes;
-  }
-
-  const newItem = await prisma.item.create({
-    data: {
-      title,
-      categoryId,
-      type,
-      attributes: Object.keys(attributes).length ? attributes : undefined,
-      isBorrowable: type !== "ReferenceBook",
-    },
-  });
-  return res.status(201).send(newItem);
 });
 
 router.put(ITEM_API_ID, async (req, res) => {
