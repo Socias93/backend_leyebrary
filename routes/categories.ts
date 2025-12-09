@@ -34,16 +34,44 @@ router.post(CATEGORY_API, async (req, res) => {
     return res.status(400).send(validation.error.issues[0].message);
   }
 
-  const { name, fields, imageUrl } = req.body;
+  const { name, imageUrl } = req.body;
 
   const exists = await prisma.category.findFirst({ where: { name } });
   if (exists) return res.status(400).send(CATEGORY_EXIST);
 
   const newCategory = await prisma.category.create({
-    data: { name, fields, imageUrl },
+    data: { name, imageUrl },
   });
 
   return res.status(201).send(newCategory);
+});
+
+router.put(CATEGORY_API_ID, async (req, res) => {
+  const findId = req.params.id;
+  const category = await prisma.category.findFirst({
+    where: { id: findId },
+  });
+
+  if (!category) return res.status(404).send(CATEGORY_NOT_FOUND);
+
+  const validation = validate(req.body);
+  if (!validation.success) {
+    return res.status(400).send(validation.error.issues[0].message);
+  }
+
+  const { name, imageUrl } = req.body;
+
+  const exists = await prisma.category.findFirst({
+    where: { name, NOT: { id: findId } },
+  });
+  if (exists) return res.status(400).send(CATEGORY_EXIST);
+
+  const updatedCategory = await prisma.category.update({
+    where: { id: findId },
+    data: { name, imageUrl },
+  });
+
+  return res.status(200).send(updatedCategory);
 });
 
 router.delete(CATEGORY_API_ID, async (req, res) => {

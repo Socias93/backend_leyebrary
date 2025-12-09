@@ -43,6 +43,7 @@ router.post(ITEM_API, async (req, res) => {
       title: req.body.title,
       attributes: req.body.attributes,
       categoryId: req.body.categoryId,
+      type: req.body.type,
     },
   });
 
@@ -68,6 +69,7 @@ router.put(ITEM_API_ID, async (req, res) => {
       title: req.body.title,
       categoryId: req.body.categoryId,
       attributes: req.body.attributes,
+      type: req.body.type,
     },
   });
 
@@ -88,7 +90,7 @@ router.post("/:id/checkout", async (req, res) => {
   const item = await prisma.item.findFirst({ where: { id: req.params.id } });
   if (!item) return res.status(404).send("Item not found");
 
-  if (item.categoryId === "Referencebook" || !item.isBorrowable)
+  if (item.type === "ReferenceBook" || !item.isBorrowable)
     return res.status(400).send("Item cannot be borrowed");
 
   const updated = await prisma.item.update({
