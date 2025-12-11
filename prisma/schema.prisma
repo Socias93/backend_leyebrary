@@ -16,10 +16,10 @@ enum ItemType {
 }
 
 model Category {
-  id       String @id @default(cuid())
-  name     String
-  imageUrl String
-  items    Item[]
+  id    String  @id @default(cuid())
+  name  String
+  image String?
+  items Item[]
 }
 
 model Item {
@@ -27,6 +27,7 @@ model Item {
   title        String
   categoryId   String
   attributes   Json?
+  image        String?
   type         ItemType?
   createdAt    DateTime  @default(now())
   isBorrowable Boolean   @default(true)
