@@ -58,6 +58,7 @@ router.post(ITEM_API, async (req, res) => {
         type,
         attributes: Object.keys(attributes).length ? attributes : undefined,
         isBorrowable: type !== "ReferenceBook",
+        image: req.body.image,
       },
     });
     return res.status(201).send(newItem);
@@ -97,6 +98,7 @@ router.put(ITEM_API_ID, async (req, res) => {
       type: req.body.type,
       attributes: Object.keys(attributes).length ? attributes : undefined,
       isBorrowable: req.body.type !== "ReferenceBook",
+      image: req.body.image,
     },
   });
 
